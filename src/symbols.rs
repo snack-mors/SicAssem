@@ -46,7 +46,7 @@ impl SymbolTable {
 
         // For each entry in entries, note how the loop itself destructures the touple.
         for (name, sym) in entries {
-            println!("Name: {:<8} | Address: {:04X}", name, sym.address);
+            println!("{:<8} | {:04X}", name, sym.address);
         }
 
     }
