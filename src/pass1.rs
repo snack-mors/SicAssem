@@ -1,12 +1,8 @@
 use std::io::{BufRead, BufReader};
 use std::fs::File;
 use crate::ir::Line;
-
 use crate::symbols::SymbolTable;
 use crate::mnemonics::{get_opcode, Directive};
-
-
-
 
 pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
     let file = File::open(filename).map_err(|e| e.to_string())?;
@@ -28,8 +24,6 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
             continue;
         }
 
-
-
         let (label, mnemonic, operand) = match tokens.len() {
             3 => (Some(tokens[0]), tokens[1], Some(tokens[2])),
             2 => {
@@ -49,7 +43,6 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
                 locctr = i32::from_str_radix(op, 16).unwrap_or(0);
             }
             start_seen = true;
-
             intermediate_code.push(Line::new(
                 locctr,
                 label,
@@ -59,18 +52,14 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
             ));
             continue;
         }
-
         let current_address = locctr;
-
         if let Some(lbl) = label {
             if symtab.insert(lbl.to_string(), current_address, source_line_number as i32).is_err(){
                 return Err(format!("Line: {}: Duplicate Symbol '{}'", source_line_number, lbl));
-
             }
         }
 
         let mut instruction_size = 0;
-
         if get_opcode(mnemonic).is_some() {
             instruction_size = 3;
         } else if let Some(dir) = Directive::from_str(mnemonic) {
@@ -80,7 +69,6 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
         else {
             return Err(format!("Line {}: Unknown Opcode '{}'", source_line_number, mnemonic));
         }
-
         intermediate_code.push(Line::new(
             current_address,
             label,
@@ -88,18 +76,13 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
             operand,
             source_line_number
         ));
-
         locctr += instruction_size;
-
         if mnemonic == "END" {
             break;
         }
-
     }
-
     if !start_seen {
         return Err("Error: Missing START directive".to_string());
     }
-
     Ok((symtab, intermediate_code))
 }

@@ -6,7 +6,6 @@ pub struct Line {
     pub operand: Option<String>,
     pub source_line: usize,
 }
-
 impl Line {
     // A standard "constructor" in Rust.
     // We take &str arguments to make the calling code cleaner.

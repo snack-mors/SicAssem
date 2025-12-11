@@ -50,7 +50,6 @@ pub enum Directive {
 }
 
 impl Directive {
-
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "START" => Some(Directive::Start),
@@ -62,7 +61,6 @@ impl Directive {
             _       => None,
         }
     }
-
     // We pass the operand because RESW/BYTE need it to calculate size.
     pub fn get_size(&self, operand: Option<&str>) -> Result<i32, String> {
         match self {
