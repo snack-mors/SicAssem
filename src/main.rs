@@ -39,7 +39,10 @@ fn main() -> Result<(), io::Error> {
             println!("Pass 1 Successful!");
             symtab.print_symbols();
         },
-        Err(e) => eprintln!("Assembly Failed: {}", e),
+        Err(e) => {
+            eprintln!("Assembly Failed: {}", e);
+            std::process::exit(1);
+        },
     }
 
 
