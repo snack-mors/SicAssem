@@ -3,7 +3,7 @@ use std::fs::File;
 use crate::ir::Line;
 
 use crate::symbols::SymbolTable;
-use crate::mnemonics::{get_opcode, is_directive};
+use crate::mnemonics::{get_opcode, Directive};
 
 
 
@@ -33,7 +33,7 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
         let (label, mnemonic, operand) = match tokens.len() {
             3 => (Some(tokens[0]), tokens[1], Some(tokens[2])),
             2 => {
-                if get_opcode(tokens[0]).is_some() || is_directive(tokens[0]) {
+                if get_opcode(tokens[0]).is_some() || Directive::from_str(tokens[0]).is_some() {
                     (None, tokens[0], Some(tokens[1]))
                 } else {
                     (Some(tokens[0]), tokens[1], None)
@@ -73,32 +73,9 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
 
         if get_opcode(mnemonic).is_some() {
             instruction_size = 3;
-        } else if is_directive(mnemonic) {
-            match mnemonic {
-                "WORD" => instruction_size = 3,
-                "RESW" => {
-                    let count = operand.unwrap().parse::<i32>().map_err(|_| "Invalid RESW")?;
-                    instruction_size = 3 * count;
-                },
-                "RESB" => {
-                    let count = operand.unwrap().parse::<i32>().map_err(|_| "Invalid RESB")?;
-                    instruction_size = count;
-                },
-                "BYTE" => {
-                    let op = operand.unwrap();
-                    if op.starts_with("C'") && op.ends_with('\'') {
-                        instruction_size = (op.len() - 3) as i32;
-                    } else if op.starts_with("X'") && op.ends_with('\'') {
-                        let hex_len = op.len() - 3;
-                        instruction_size = (hex_len / 2) as i32;
-                    } else {
-                        return Err(format!("Line {}: Invalid BYTE literal", source_line_number));
-                    }
-                },
-                "END" => {}
-                _ => return Err(format!("Line {}: Unknown directive '{}'", source_line_number, mnemonic)),
-
-            }
+        } else if let Some(dir) = Directive::from_str(mnemonic) {
+            instruction_size = dir.get_size(operand)
+                .map_err(|e| format!("Line {}: {}", source_line_number, e))?;
         }
         else {
             return Err(format!("Line {}: Unknown Opcode '{}'", source_line_number, mnemonic));

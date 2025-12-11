@@ -37,6 +37,68 @@ pub fn get_opcode(mnemonic: &str) -> Option<OpInfo> {
     }
 }
 
-pub fn is_directive(mnemonic: &str) -> bool {
-    matches!(mnemonic, "START" | "END" | "WORD" | "BYTE" | "RESW" | "RESB")
+// src/directives.rs
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Directive {
+    Start,
+    End,
+    Byte,
+    Word,
+    Resb,
+    Resw,
+}
+
+impl Directive {
+
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "START" => Some(Directive::Start),
+            "END"   => Some(Directive::End),
+            "BYTE"  => Some(Directive::Byte),
+            "WORD"  => Some(Directive::Word),
+            "RESB"  => Some(Directive::Resb),
+            "RESW"  => Some(Directive::Resw),
+            _       => None,
+        }
+    }
+
+    // We pass the operand because RESW/BYTE need it to calculate size.
+    pub fn get_size(&self, operand: Option<&str>) -> Result<i32, String> {
+        match self {
+            Directive::Word => Ok(3),
+            Directive::Start | Directive::End => Ok(0),
+
+            Directive::Resw => {
+                let val = operand.ok_or("Missing operand for RESW")?
+                    .parse::<i32>()
+                    .map_err(|_| "Invalid integer for RESW")?;
+                Ok(val * 3)
+            },
+
+            Directive::Resb => {
+                let val = operand.ok_or("Missing operand for RESB")?
+                    .parse::<i32>()
+                    .map_err(|_| "Invalid integer for RESB")?;
+                Ok(val)
+            },
+
+            Directive::Byte => {
+                let op = operand.ok_or("Missing operand for BYTE")?;
+                if op.starts_with("C'") && op.ends_with('\'') {
+                    // C'EOF' -> 3 bytes
+                    Ok((op.len() - 3) as i32)
+                } else if op.starts_with("X'") && op.ends_with('\'') {
+                    // X'F1' -> 1 byte
+                    let hex_len = op.len() - 3;
+                    if hex_len % 2 != 0 {
+                        return Err("Hex literal must have even number of digits".to_string());
+                    }
+                    Ok((hex_len / 2) as i32)
+                } else {
+                    Err("Invalid BYTE format".to_string())
+                }
+            }
+        }
+    }
 }
