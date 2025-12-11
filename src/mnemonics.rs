@@ -26,7 +26,7 @@ pub fn get_opcode(mnemonic: &str) -> Option<OpInfo> {
         "STA"  => Some(OpInfo { opcode: 0x0C, format: 3 }),
         "STCH" => Some(OpInfo { opcode: 0x54, format: 3 }),
         "STL"  => Some(OpInfo { opcode: 0x14, format: 3 }),
-        "STSW" => Some(OpInfo { opcode: 0xE8, format: 3 }), 
+        "STSW" => Some(OpInfo { opcode: 0xE8, format: 3 }),
         "STX"  => Some(OpInfo { opcode: 0x10, format: 3 }),
         "SUB"  => Some(OpInfo { opcode: 0x1C, format: 3 }),
         "TD"   => Some(OpInfo { opcode: 0xE0, format: 3 }),
@@ -38,7 +38,5 @@ pub fn get_opcode(mnemonic: &str) -> Option<OpInfo> {
 }
 
 pub fn is_directive(mnemonic: &str) -> bool {
-    let directives = ["START", "END", "WORD", "BYTE", "RESW", "RESB"];
-
-    directives.contains(&mnemonic)
+    matches!(mnemonic, "START" | "END" | "WORD" | "BYTE" | "RESW" | "RESB")
 }

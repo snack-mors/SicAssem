@@ -28,35 +28,20 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
             continue;
         }
 
-        let mut label: Option<&str> = None;
-        let mut mnemonic: &str;
-        let mut operand: Option<&str> = None;
 
-        match tokens.len() {
-            3 => {
-                // LABEL MNEMONIC OPERAND
-                label = Some(tokens[0]);
-                mnemonic = tokens[1];
-                operand = Some(tokens[2]);
-            }
+
+        let (label, mnemonic, operand) = match tokens.len() {
+            3 => (Some(tokens[0]), tokens[1], Some(tokens[2])),
             2 => {
-                // Either "LABEL MNEMONIC" or "MNEMONIC OPERAND"
-                // If the first token is an instruction, it's MNEMONIC OPERAND
                 if get_opcode(tokens[0]).is_some() || is_directive(tokens[0]) {
-                    mnemonic = tokens[0];
-                    operand = Some(tokens[1]);
+                    (None, tokens[0], Some(tokens[1]))
+                } else {
+                    (Some(tokens[0]), tokens[1], None)
                 }
-                else {
-                    label = Some(tokens[0]);
-                    mnemonic = tokens[1];
-                }
-            }
-            1 => {
-                // MNEMONIC ONLY
-                mnemonic = tokens[0];
-            }
-            _ => return Err(format!("Line: {}: Too many tokens", source_line_number)),
-        }
+            },
+            1 => (None, tokens[0], None),
+            _ => return Err(format!("Line {}: Too many tokens", source_line_number)),
+        };
 
         if mnemonic == "START" {
             if let Some(op) = operand {
