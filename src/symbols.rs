@@ -20,7 +20,7 @@ impl SymbolTable {
     // Note how in the insert we have to declare that a pointer is &mut = MUTABLE.
     pub fn insert(&mut self, name: String, address: i32, source_line: i32) -> Result<(), String> {
         if name.len() > 6 {
-            return Err(format!("Symbol name cannot be more than 6 characters"));
+            return Err("Symbol name cannot be more than 6 characters".to_string());
         }
         if self.map.contains_key(&name) {
             return Err(format!("Duplicate symbol name: {}", name));
