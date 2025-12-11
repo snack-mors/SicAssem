@@ -44,12 +44,5 @@ fn main() -> Result<(), io::Error> {
             std::process::exit(1);
         },
     }
-
-
-
-
-
-
-
     Ok(())
 }
