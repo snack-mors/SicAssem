@@ -55,7 +55,7 @@ pub fn pass_one(filename: &str) -> Result<(SymbolTable, Vec<Line>), String> {
         let current_address = locctr;
         if let Some(lbl) = label {
             if symtab.insert(lbl.to_string(), current_address, source_line_number as i32).is_err(){
-                return Err(format!("Line: {}: Duplicate Symbol '{}'", source_line_number, lbl));
+                return Err(format!("Line: {}: '{}'", source_line_number, lbl));
             }
         }
 

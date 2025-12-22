@@ -37,7 +37,7 @@ pub fn get_opcode(mnemonic: &str) -> Option<OpInfo> {
     }
 }
 
-// src/directives.rs
+
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Directive {

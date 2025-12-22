@@ -2,9 +2,12 @@ mod symbols;
 mod mnemonics;
 mod ir;
 mod pass1;
+mod pass2;
+
 use std::io;
 use clap::Parser;
 use crate::pass1::pass_one;
+use crate::pass2::pass_two;
 
 #[derive(Parser)]
 #[command(version, about = "A simple file reader")]
@@ -31,7 +34,13 @@ fn main() -> Result<(), io::Error> {
     match pass_one(&args.filename) {
         Ok((symtab, _ir)) => { // TODO: REMOVE _ from IR
             println!("Pass 1 Successful!");
-            symtab.print_symbols();
+            match pass_two(&_ir, &symtab, &args.filename) {
+                Ok(_) => println!("Pass 2 Successful. Object file created."),
+                Err(e) => {
+                    eprintln!("Pass 2 Failed: {}", e);
+                    std::process::exit(1);
+                }
+            }
         },
         Err(e) => {
             eprintln!("Assembly Failed: {}", e);

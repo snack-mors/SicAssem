@@ -43,4 +43,9 @@ impl SymbolTable {
         }
 
     }
+
+
+    pub fn get_address(&self, name: &str) -> Option<i32> {
+        self.map.get(name).map(|sym| sym.address)
+    }
 }
